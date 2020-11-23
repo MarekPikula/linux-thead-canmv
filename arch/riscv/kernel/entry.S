@@ -124,11 +124,6 @@ skip_context_tracking:
 	REG_L a1, (a1)
 	jr a1
 1:
-#ifdef CONFIG_TRACE_IRQFLAGS
-	call trace_hardirqs_on
-
-	REG_L s1, PT_STATUS(sp)
-#endif
 	/*
 	 * Exceptions run with interrupts enabled or disabled depending on the
 	 * state of SR_PIE in m/sstatus.
@@ -137,6 +132,8 @@ skip_context_tracking:
 	beqz t0, 1f
 #ifdef CONFIG_TRACE_IRQFLAGS
 	call __trace_hardirqs_on
+
+	REG_L s1, PT_STATUS(sp)
 #endif
 	csrs CSR_STATUS, SR_IE
 
