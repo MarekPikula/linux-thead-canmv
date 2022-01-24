@@ -38,6 +38,7 @@ int dev_ifconf(struct net *net, struct ifconf __user *uifc)
 	size_t size;
 	int len, total = 0, done;
 
+#ifdef CONFIG_COMPAT
 	/* both the ifconf and the ifreq structures are slightly different */
 	if (in_compat_syscall()) {
 		struct compat_ifconf ifc32;
@@ -48,7 +49,9 @@ int dev_ifconf(struct net *net, struct ifconf __user *uifc)
 		pos = compat_ptr(ifc32.ifcbuf);
 		len = ifc32.ifc_len;
 		size = sizeof(struct compat_ifreq);
-	} else {
+	} else
+#endif
+	{
 		struct ifconf ifc;
 
 		if (copy_from_user(&ifc, uifc, sizeof(struct ifconf)))
@@ -82,6 +85,7 @@ static int dev_getifmap(struct net_device *dev, struct ifreq *ifr)
 {
 	struct ifmap *ifmap = &ifr->ifr_map;
 
+#ifdef CONFIG_COMPAT
 	if (in_compat_syscall()) {
 		struct compat_ifmap *cifmap = (struct compat_ifmap *)ifmap;
 
@@ -94,7 +98,7 @@ static int dev_getifmap(struct net_device *dev, struct ifreq *ifr)
 
 		return 0;
 	}
-
+#endif
 	ifmap->mem_start  = dev->mem_start;
 	ifmap->mem_end    = dev->mem_end;
 	ifmap->base_addr  = dev->base_addr;
@@ -107,11 +111,13 @@ static int dev_getifmap(struct net_device *dev, struct ifreq *ifr)
 
 static int dev_setifmap(struct net_device *dev, struct ifreq *ifr)
 {
+#ifdef CONFIG_COMPAT
 	struct compat_ifmap *cifmap = (struct compat_ifmap *)&ifr->ifr_map;
+#endif
 
 	if (!dev->netdev_ops->ndo_set_config)
 		return -EOPNOTSUPP;
-
+#ifdef CONFIG_COMPAT
 	if (in_compat_syscall()) {
 		struct ifmap ifmap = {
 			.mem_start  = cifmap->mem_start,
@@ -124,7 +130,7 @@ static int dev_setifmap(struct net_device *dev, struct ifreq *ifr)
 
 		return dev->netdev_ops->ndo_set_config(dev, &ifmap);
 	}
-
+#endif
 	return dev->netdev_ops->ndo_set_config(dev, &ifr->ifr_map);
 }
 
