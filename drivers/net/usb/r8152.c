@@ -1512,16 +1512,18 @@ static int determine_ethernet_addr(struct r8152 *tp, struct sockaddr *sa)
 			/* if device doesn't support MAC pass through this will
 			 * be expected to be non-zero
 			 */
-			ret = vendor_mac_passthru_addr_read(tp, sa);
-			if (ret < 0)
-				ret = pla_ocp_read(tp, PLA_BACKUP, 8,
-						   sa->sa_data);
+			// ret = vendor_mac_passthru_addr_read(tp, sa);
+			// if (ret < 0)
+			// 	ret = pla_ocp_read(tp, PLA_BACKUP, 8,
+			// 			   sa->sa_data);
+			ret = 0;
 		}
 	}
 
 	if (ret < 0) {
 		netif_err(tp, probe, dev, "Get ether addr fail\n");
-	} else if (!is_valid_ether_addr(sa->sa_data)) {
+	// } else if (!is_valid_ether_addr(sa->sa_data)) {
+	} else {
 		netif_err(tp, probe, dev, "Invalid ether addr %pM\n",
 			  sa->sa_data);
 		eth_hw_addr_random(dev);

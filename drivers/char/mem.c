@@ -399,6 +399,11 @@ static int mmap_mem(struct file *file, struct vm_area_struct *vma)
 	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
 						 size,
 						 vma->vm_page_prot);
+	/*
+	 * only for k230 if use nomal memory(0 ~ 2G) SO should not be set
+	 */
+	if(offset < 0x80000000)
+		vma->vm_page_prot.pgprot &= ~(1UL << 63);
 
 	vma->vm_ops = &mmap_mem_ops;
 

@@ -285,6 +285,21 @@ choice
 		bool "medium any code model"
 endchoice
 
+choice
+	prompt "Kernel text, data and rodata section align size"
+	default SECTION_ALIGN_2MB
+
+	config SECTION_ALIGN_2MB
+		bool "2MB"
+	config SECTION_ALIGN_4KB
+		bool "4KB"
+endchoice
+
+config SECTION_ALIGN_SHIFT
+	int
+	default 21 if SECTION_ALIGN_2MB
+	default 12 if SECTION_ALIGN_4KB
+
 config MODULE_SECTIONS
 	bool
 	select HAVE_MOD_ARCH_SPECIFIC

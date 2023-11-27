@@ -270,4 +270,12 @@ config SPRD_EFUSE
 	  This driver can also be built as a module. If so, the module
 	  will be called nvmem-sprd-efuse.
 
+config NVMEM_KENDRYTE_K230_OTP
+    tristate "Kendryte k230 otp support"
+    help 
+        This is a driver to kendryte k230 SOC.
+
+        This driver can also be built as a module. If so, the module
+        will be called nvmem_kendryte_otp.
+
 endif

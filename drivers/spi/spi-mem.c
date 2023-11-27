@@ -156,11 +156,11 @@ bool spi_mem_default_supports_op(struct spi_mem *mem,
 				   op->data.dir == SPI_MEM_DATA_OUT))
 		return false;
 
-	if (op->cmd.dtr || op->addr.dtr || op->dummy.dtr || op->data.dtr)
-		return false;
+	// if (op->cmd.dtr || op->addr.dtr || op->dummy.dtr || op->data.dtr)
+	// 	return false;
 
-	if (op->cmd.nbytes != 1)
-		return false;
+	// if (op->cmd.nbytes != 1)
+	// 	return false;
 
 	return true;
 }

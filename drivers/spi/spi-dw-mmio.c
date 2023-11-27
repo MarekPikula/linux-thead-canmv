@@ -246,9 +246,18 @@ static int dw_spi_mmio_probe(struct platform_device *pdev)
 
 	dws->paddr = mem->start;
 
-	dws->irq = platform_get_irq(pdev, 0);
-	if (dws->irq < 0)
-		return dws->irq; /* -ENXIO */
+	// dws->irq = platform_get_irq(pdev, 0);
+	// if (dws->irq < 0)
+	// 	return dws->irq; /* -ENXIO */
+	dws->txe_irq = platform_get_irq_byname_optional(pdev,"spi_txe");
+	if (dws->txe_irq < 0)
+		return dws->txe_irq; /* -ENXIO */
+	dws->rxf_irq = platform_get_irq_byname_optional(pdev,"spi_rxf");
+	if (dws->rxf_irq < 0)
+		return dws->rxf_irq; /* -ENXIO */
+	dws->done_irq = platform_get_irq_byname_optional(pdev,"spi_done");
+	if (dws->done_irq < 0)
+		return dws->done_irq; /* -ENXIO */
 
 	dwsmmio->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(dwsmmio->clk))

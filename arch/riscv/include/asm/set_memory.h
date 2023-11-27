@@ -29,7 +29,7 @@ int set_direct_map_default_noflush(struct page *page);
 
 #ifdef CONFIG_ARCH_HAS_STRICT_KERNEL_RWX
 #ifdef CONFIG_64BIT
-#define SECTION_ALIGN (1 << 21)
+#define SECTION_ALIGN (1 << CONFIG_SECTION_ALIGN_SHIFT)
 #else
 #define SECTION_ALIGN (1 << 22)
 #endif

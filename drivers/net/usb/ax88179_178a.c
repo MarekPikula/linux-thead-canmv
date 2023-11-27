@@ -201,9 +201,9 @@ static int __ax88179_read_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
 	ret = fn(dev, cmd, USB_DIR_IN | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
 		 value, index, data, size);
 
-	if (unlikely(ret < 0))
-		netdev_warn(dev->net, "Failed to read reg index 0x%04x: %d\n",
-			    index, ret);
+	// if (unlikely(ret < 0))
+	// 	netdev_warn(dev->net, "Failed to read reg index 0x%04x: %d\n",
+	// 		    index, ret);
 
 	return ret;
 }
@@ -224,9 +224,9 @@ static int __ax88179_write_cmd(struct usbnet *dev, u8 cmd, u16 value, u16 index,
 	ret = fn(dev, cmd, USB_DIR_OUT | USB_TYPE_VENDOR | USB_RECIP_DEVICE,
 		 value, index, data, size);
 
-	if (unlikely(ret < 0))
-		netdev_warn(dev->net, "Failed to write reg index 0x%04x: %d\n",
-			    index, ret);
+	// if (unlikely(ret < 0))
+	// 	netdev_warn(dev->net, "Failed to write reg index 0x%04x: %d\n",
+	// 		    index, ret);
 
 	return ret;
 }

@@ -536,6 +536,19 @@ config HW_RANDOM_XIPHERA
 	  To compile this driver as a module, choose M here: the
 	  module will be called xiphera-trng.
 
+config HW_RANDOM_K230
+	tristate "Canaan K230 True Random Number Generator support"
+	depends on HW_RANDOM || ARCH_RV64I
+	default HW_RANDOM
+	help
+		This driver provides support for the True Random Number
+		Generator available in K230 SOC.
+
+		To compile this driver as a module, choose M here: the module
+		will be called k230-rng.
+
+		If unsure, say Y.
+
 endif # HW_RANDOM
 
 config UML_RANDOM

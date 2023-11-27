@@ -72,6 +72,14 @@ config VT_CONSOLE
 
 	  If unsure, say Y.
 
+config MAX_NR_CONSOLES
+	int "Maximum number of virtual terminal"
+	depends on VT_CONSOLE
+	range 1 64
+	default "64"
+	help
+	  The maximum number of virtual terminal that can be used at any one time.
+	  The default is 64.  Embedded systems may want to reduce this to save memory.
 config VT_CONSOLE_SLEEP
 	def_bool y
 	depends on VT_CONSOLE && PM_SLEEP
