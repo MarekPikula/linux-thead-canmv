@@ -11,8 +11,11 @@
 #define GZERO_QLEN		32
 #define GZERO_ISOC_INTERVAL	4
 #define GZERO_ISOC_MAXPACKET	1024
+#define GZERO_INT_INTERVAL	4
+#define GZERO_INT_MAXPACKET	1024
 #define GZERO_SS_BULK_QLEN	1
 #define GZERO_SS_ISO_QLEN	8
+#define GZERO_SS_INT_QLEN	8
 
 struct usb_zero_options {
 	unsigned pattern;
@@ -36,6 +39,12 @@ struct f_ss_opts {
 	unsigned bulk_buflen;
 	unsigned bulk_qlen;
 	unsigned iso_qlen;
+
+	unsigned int_interval;
+	unsigned int_maxpacket;
+	unsigned int_mult;
+	unsigned int_maxburst;
+	unsigned int_qlen;
 
 	/*
 	 * Read/write access to configfs attributes is handled by configfs.
@@ -68,6 +77,7 @@ int lb_modinit(void);
 /* common utilities */
 void disable_endpoints(struct usb_composite_dev *cdev,
 		struct usb_ep *in, struct usb_ep *out,
-		struct usb_ep *iso_in, struct usb_ep *iso_out);
+		struct usb_ep *iso_in, struct usb_ep *iso_out,
+		struct usb_ep *int_in, struct usb_ep *int_out);
 
 #endif /* __G_ZERO_H */

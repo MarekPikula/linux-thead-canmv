@@ -465,8 +465,14 @@ unsigned long i2c_dw_clk_rate(struct dw_i2c_dev *dev)
 	 * Clock is not necessary if we got LCNT/HCNT values directly from
 	 * the platform code.
 	 */
-	if (WARN_ON_ONCE(!dev->get_clk_rate_khz))
+	// if (WARN_ON_ONCE(!dev->get_clk_rate_khz))
+	// 	return 0;
+	if(!dev->get_clk_rate_khz) 
+	{
+		pr_err("error get clk\n");
 		return 0;
+	}
+
 	return dev->get_clk_rate_khz(dev);
 }
 

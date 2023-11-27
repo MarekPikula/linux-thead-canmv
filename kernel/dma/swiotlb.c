@@ -152,8 +152,8 @@ void swiotlb_set_max_segment(unsigned int val)
 		max_segment = rounddown(val, PAGE_SIZE);
 }
 
-/* default to 64MB */
-#define IO_TLB_DEFAULT_SIZE (64UL<<20)
+/* default to 2MB */
+#define IO_TLB_DEFAULT_SIZE (2UL<<20)
 unsigned long swiotlb_size_or_default(void)
 {
 	unsigned long size;

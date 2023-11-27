@@ -34,6 +34,38 @@
 
 #include "head.h"
 
+#define RESTART 1
+#ifdef RESTART
+
+extern int register_restart_handler(struct notifier_block *nb);
+
+#define SYSCTL_BOOT_BASE_ADDR   0x91102000U
+#define CPU0_RST_CTL            0x60
+
+static void __iomem *MMAP_ADDR;
+
+static int k230_restart(struct notifier_block *this, unsigned long mode, void *cmd)
+{
+    MMAP_ADDR = ioremap(SYSCTL_BOOT_BASE_ADDR + CPU0_RST_CTL, 4);
+
+    writel(((1 << 0) | (1 << 16)), MMAP_ADDR);
+
+    while(1);
+
+    return 0;
+}
+
+static int k230_restart_register(void)
+{
+    static struct notifier_block restart_handler;
+
+    restart_handler.notifier_call = k230_restart;
+    restart_handler.priority = 128;
+
+    return register_restart_handler(&restart_handler);
+}
+#endif
+
 #if defined(CONFIG_DUMMY_CONSOLE) || defined(CONFIG_EFI)
 struct screen_info screen_info __section(".data") = {
 	.orig_video_lines	= 30,
@@ -289,6 +321,8 @@ void __init setup_arch(char **cmdline_p)
 #endif
 
 	riscv_fill_hwcap();
+
+    k230_restart_register();
 }
 
 static int __init topology_init(void)

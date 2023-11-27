@@ -930,6 +930,8 @@ static int dwc2_cmpl_host_isoc_dma_desc(struct dwc2_hsotg *hsotg,
 		frame_desc->status = 0;
 	}
 
+	qtd->urb->actual_length += frame_desc->actual_length;
+
 	if (++qtd->isoc_frame_index == qtd->urb->packet_count) {
 		/*
 		 * urb->status is not used for isoc transfers here. The

@@ -727,7 +727,7 @@ config IMX2_WDT
 config ICE_WDT
 	tristate "ICE+ Watchdog"
 	depends on RISCV
-	default y
+	default n
 	select WATCHDOG_CORE
 	help
 	  This is the driver for the hardware watchdog

@@ -3353,7 +3353,7 @@ int spi_setup(struct spi_device *spi)
 		dev_warn(&spi->dev,
 			 "setup: ignoring unsupported mode bits %x\n",
 			 ugly_bits);
-		spi->mode &= ~ugly_bits;
+		// spi->mode &= ~ugly_bits;
 		bad_bits &= ~ugly_bits;
 	}
 	if (bad_bits) {

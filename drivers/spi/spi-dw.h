@@ -33,11 +33,22 @@
 #define DW_SPI_DMACR			0x4c
 #define DW_SPI_DMATDLR			0x50
 #define DW_SPI_DMARDLR			0x54
+#define DW_SPI_AXIAWLEN			0x50
+#define DW_SPI_AXIARLEN			0x54
 #define DW_SPI_IDR			0x58
 #define DW_SPI_VERSION			0x5c
 #define DW_SPI_DR			0x60
 #define DW_SPI_RX_SAMPLE_DLY		0xf0
 #define DW_SPI_CS_OVERRIDE		0xf4
+#define DW_SPI_SPI_CTRLR0		0xf4
+#define DW_SPI_DDR_DRIVE_EDGE	0xf8
+
+#define DW_SPI_SPIDR			0x120
+#define DW_SPI_SPIAR			0x124
+#define DW_SPI_AXIAR0			0x128
+#define DW_SPI_AXIAR1			0x12c
+#define DW_SPI_AXIECR			0x130
+#define DW_SPI_DONECR			0x134
 
 /* Bit fields in CTRLR0 */
 #define SPI_DFS_OFFSET			0
@@ -79,8 +90,27 @@
  */
 #define DWC_SSI_CTRLR0_KEEMBAY_MST	BIT(31)
 
+/* Bit fields in CTRLR0 for enhanced SPI */
+#define DW_HSSI_CTRLR0_SPI_FRF_MASK		GENMASK(23, 22)
+#define DW_SPI_CTRLR0_SPI_FRF_STD_SPI		0x0
+#define DW_SSI_CTRLR0_SPI_FRF_DUAL_SPI		0x1
+#define DW_SSI_CTRLR0_SPI_FRF_QUAD_SPI		0x2
+#define DW_SSI_CTRLR0_SPI_FRF_OCT_SPI		0x3
 /* Bit fields in CTRLR1 */
 #define SPI_NDF_MASK			GENMASK(15, 0)
+
+#define DW_SPI_SPI_CTRLR0_CLK_STRETCH_EN	BIT(30)
+#define DW_SPI_SPI_CTRLR0_WAIT_CYCLE_MASK	GENMASK(15, 11)
+#define DW_SPI_SPI_CTRLR0_INST_L_MASK		GENMASK(9, 8)
+#define DW_SPI_SPI_CTRLR0_INST_L_INST_L0	0x0
+#define DW_SPI_SPI_CTRLR0_INST_L_INST_L8	0x2
+#define DW_SPI_SPI_CTRLR0_INST_L_INST_L16	0x3
+#define DW_SPI_SPI_CTRLR0_ADDR_L_MASK		GENMASK(5, 2)
+#define DW_HSSI_SPI_CTRLR0_ADDR_L32			0x8
+#define DW_SPI_SPI_CTRLR0_TRANS_TYPE_MASK		GENMASK(1, 0)
+#define DW_SPI_SPI_CTRLR0_TRANS_TYPE_TT0	0x0
+#define DW_SPI_SPI_CTRLR0_TRANS_TYPE_TT1	0x1
+#define DW_SPI_SPI_CTRLR0_TRANS_TYPE_TT2	0x2
 
 /* Bit fields in SR, 7 bits */
 #define SR_MASK				0x7f		/* cover 7 bits */
@@ -99,6 +129,7 @@
 #define SPI_INT_RXOI			(1 << 3)
 #define SPI_INT_RXFI			(1 << 4)
 #define SPI_INT_MSTI			(1 << 5)
+#define SPI_INT_DONE			(1 << 11)
 
 /* Bit fields in DMACR */
 #define SPI_DMA_RDMAE			(1 << 0)
@@ -121,6 +152,76 @@ enum dw_ssi_type {
 #define DW_SPI_CAP_CS_OVERRIDE		BIT(0)
 #define DW_SPI_CAP_KEEMBAY_MST		BIT(1)
 #define DW_SPI_CAP_DWC_SSI		BIT(2)
+#define DW_SPI_CAP_EXT_SPI BIT(2)
+
+typedef enum {
+    BYTE_1 = 0,
+    BYTE_2 = 1,
+    BYTE_4 = 2,
+    BYTE_8 = 3
+} ATW;
+
+typedef struct _spi_txftlr_t
+{
+    //When the number of transmit FIFO entries is less than orequal to this value, the transmit FIFO empty interrupt is triggered.
+    uint32_t tft:8;
+    uint32_t rsvd0:8;
+    //In Internal DMA mode, this field sets the minimum amount of data frames present in the FIFO after which DWC_ssi starts the transfer.
+    uint32_t txfthr:11;
+    uint32_t rsvd1:5;
+} __attribute__((packed, aligned(4))) spi_txftlr_t;
+
+typedef union _spi_txftlr_u
+{
+    spi_txftlr_t txftlr;
+    uint32_t data;
+} spi_txftlr_u;
+
+typedef struct _spi_axiarlen_t
+{
+    uint32_t rsvd0:8;
+    uint32_t arlen:8;
+    uint32_t rsvd1:16;
+} __attribute__((packed, aligned(4))) spi_axiarlen_t;
+
+typedef union _spi_axiarlen_u
+{
+    spi_axiarlen_t axiarlen;
+    uint32_t data;
+} spi_axiarlen_u;
+
+typedef struct _spi_axiawlen_t
+{
+    uint32_t rsvd0:8;
+    uint32_t awlen:8;
+    uint32_t rsvd1:16;
+} __attribute__((packed, aligned(4))) spi_axiawlen_t;
+
+typedef union _spi_axiawlen_u
+{
+    spi_axiawlen_t axiawlen;
+    uint32_t data;
+} spi_axiawlen_u;
+
+typedef struct _spi_dmacr_t
+{
+    uint32_t rsvd0:2;
+    uint32_t idmae:1;
+    uint32_t atw:2;
+    uint32_t rsvd1:1;
+    uint32_t ainc:1;
+    uint32_t rsvd2:1;
+    uint32_t acache:4;
+    uint32_t aprot:3;
+    uint32_t aid:4;
+    uint32_t rsvd3:13;
+} __attribute__((packed, aligned(4))) spi_dmacr_t;
+
+typedef union _spi_dmacr_u
+{
+    spi_dmacr_t dmacr;
+    uint32_t data;
+} spi_dmacr_u;
 
 /* Slave spi_transfer/spi_mem_op related */
 struct dw_spi_cfg {
@@ -128,6 +229,12 @@ struct dw_spi_cfg {
 	u8 dfs;
 	u32 ndf;
 	u32 freq;
+	u8 spi_frf;
+	u8 trans_t;
+	u8 inst_l;
+	u8 addr_l;
+	u8 wait_c;
+	u8 dtr;
 };
 
 struct dw_spi;
@@ -147,6 +254,9 @@ struct dw_spi {
 	void __iomem		*regs;
 	unsigned long		paddr;
 	int			irq;
+	int         txe_irq;
+	int			rxf_irq;
+	int			done_irq;
 	u32			fifo_len;	/* depth of the FIFO buffer */
 	u32			max_mem_freq;	/* max mem-ops bus freq */
 	u32			max_freq;	/* max bus freq supported */

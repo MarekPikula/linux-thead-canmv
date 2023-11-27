@@ -68,6 +68,8 @@
 #define ACPI_GPIO_SUPPORT
 #endif
 
+#define _CONFIG_DATA_FROM_DTB
+
 struct goodix_ts_data;
 
 enum goodix_irq_pin_access_method {
@@ -115,6 +117,7 @@ struct goodix_ts_data {
 	unsigned int contact_size;
 	u8 config[GOODIX_CONFIG_MAX_LENGTH];
 	unsigned short keymap[GOODIX_MAX_KEYS];
+	unsigned char cfg_data[512];
 };
 
 static int goodix_check_cfg_8(struct goodix_ts_data *ts,
@@ -724,20 +727,20 @@ static int goodix_reset(struct goodix_ts_data *ts)
 	if (error)
 		return error;
 
-	msleep(20);				/* T2: > 10ms */
+	msleep(1);				/* T2: > 10ms */
 
 	/* HIGH: 0x28/0x29, LOW: 0xBA/0xBB */
 	error = goodix_irq_direction_output(ts, ts->client->addr == 0x14);
 	if (error)
 		return error;
 
-	usleep_range(100, 2000);		/* T3: > 100us */
+	usleep_range(100, 150);		/* T3: > 100us */
 
 	error = gpiod_direction_output(ts->gpiod_rst, 1);
 	if (error)
 		return error;
 
-	usleep_range(6000, 10000);		/* T4: > 5ms */
+	usleep_range(5000, 6000);		/* T4: > 5ms */
 
 	/* end select I2C slave addr */
 	error = gpiod_direction_input(ts->gpiod_rst);
@@ -879,31 +882,11 @@ static int goodix_get_gpio_config(struct goodix_ts_data *ts)
 	int error;
 	struct device *dev;
 	struct gpio_desc *gpiod;
-	bool added_acpi_mappings = false;
 
 	if (!ts->client)
 		return -EINVAL;
 	dev = &ts->client->dev;
 
-	ts->avdd28 = devm_regulator_get(dev, "AVDD28");
-	if (IS_ERR(ts->avdd28)) {
-		error = PTR_ERR(ts->avdd28);
-		if (error != -EPROBE_DEFER)
-			dev_err(dev,
-				"Failed to get AVDD28 regulator: %d\n", error);
-		return error;
-	}
-
-	ts->vddio = devm_regulator_get(dev, "VDDIO");
-	if (IS_ERR(ts->vddio)) {
-		error = PTR_ERR(ts->vddio);
-		if (error != -EPROBE_DEFER)
-			dev_err(dev,
-				"Failed to get VDDIO regulator: %d\n", error);
-		return error;
-	}
-
-retry_get_irq_gpio:
 	/* Get the interrupt GPIO pin number */
 	gpiod = devm_gpiod_get_optional(dev, GOODIX_GPIO_INT_NAME, GPIOD_IN);
 	if (IS_ERR(gpiod)) {
@@ -912,11 +895,6 @@ retry_get_irq_gpio:
 			dev_dbg(dev, "Failed to get %s GPIO: %d\n",
 				GOODIX_GPIO_INT_NAME, error);
 		return error;
-	}
-	if (!gpiod && has_acpi_companion(dev) && !added_acpi_mappings) {
-		added_acpi_mappings = true;
-		if (goodix_add_acpi_gpio_mappings(ts) == 0)
-			goto retry_get_irq_gpio;
 	}
 
 	ts->gpiod_int = gpiod;
@@ -1188,7 +1166,9 @@ static void goodix_config_cb(const struct firmware *cfg, void *ctx)
 	goodix_configure_dev(ts);
 
 err_release_cfg:
+#ifndef _CONFIG_DATA_FROM_DTB
 	release_firmware(cfg);
+#endif
 	complete_all(&ts->firmware_loading_complete);
 }
 
@@ -1205,6 +1185,7 @@ static int goodix_ts_probe(struct i2c_client *client,
 {
 	struct goodix_ts_data *ts;
 	int error;
+	struct firmware cfg;
 
 	dev_dbg(&client->dev, "I2C Address: 0x%02x\n", client->addr);
 
@@ -1234,20 +1215,6 @@ static int goodix_ts_probe(struct i2c_client *client,
 			error);
 		return error;
 	}
-
-	error = regulator_enable(ts->vddio);
-	if (error) {
-		dev_err(&client->dev,
-			"Failed to enable VDDIO regulator: %d\n",
-			error);
-		regulator_disable(ts->avdd28);
-		return error;
-	}
-
-	error = devm_add_action_or_reset(&client->dev,
-					 goodix_disable_regulators, ts);
-	if (error)
-		return error;
 
 reset:
 	if (ts->reset_controller_at_probe) {
@@ -1281,6 +1248,17 @@ reset:
 
 	if (ts->load_cfg_from_disk) {
 		/* update device config */
+#ifdef _CONFIG_DATA_FROM_DTB
+		memset(ts->cfg_data, 0x00, ts->chip->config_len);
+		of_property_read_u8_array(client->dev.of_node, "goodix,cfg-group0", ts->cfg_data, ts->chip->config_len);
+		cfg.size = ts->chip->config_len;
+		cfg.data = ts->cfg_data;
+
+		goodix_config_cb(&cfg, ts);
+		udelay(100);
+		if (goodix_i2c_write_u8(ts->client, GOODIX_READ_COOR_ADDR, 0) < 0)
+			dev_err(&ts->client->dev, "I2C write end_cmd error\n");
+#else
 		ts->cfg_name = devm_kasprintf(&client->dev, GFP_KERNEL,
 					      "goodix_%s_cfg.bin", ts->id);
 		if (!ts->cfg_name)
@@ -1295,7 +1273,7 @@ reset:
 				error);
 			return error;
 		}
-
+#endif
 		return 0;
 	} else {
 		error = goodix_configure_dev(ts);

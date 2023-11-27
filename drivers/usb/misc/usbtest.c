@@ -2020,6 +2020,7 @@ static struct urb *iso_alloc_urb(
 			bytes);
 
 	for (i = 0; i < packets; i++) {
+		
 		/* here, only the last packet will be short */
 		urb->iso_frame_desc[i].length = min((unsigned) bytes, maxp);
 		bytes -= urb->iso_frame_desc[i].length;
@@ -2165,7 +2166,7 @@ static int test_unaligned_bulk(
 {
 	int retval;
 	struct urb *urb = usbtest_alloc_urb(testdev_to_usbdev(tdev),
-			pipe, length, transfer_flags, 1, 0, simple_callback);
+			pipe, length, transfer_flags, 4, 0, simple_callback);
 
 	if (!urb)
 		return -ENOMEM;
@@ -2404,7 +2405,7 @@ usbtest_do_ioctl(struct usb_interface *intf, struct usbtest_param_32 *param)
 		retval = 0;
 		dev_info(&intf->dev, "TEST 13:  set/clear %d halts\n",
 				param->iterations);
-		for (i = param->iterations; retval == 0 && i--; /* NOP */)
+		// for (i = param->iterations; retval == 0 && i--; /* NOP */)
 			retval = halt_simple(dev);
 
 		if (retval)
@@ -2527,7 +2528,7 @@ usbtest_do_ioctl(struct usb_interface *intf, struct usbtest_param_32 *param)
 				param->iterations,
 				param->sglen, param->length);
 		retval = test_queue(dev, param,
-				dev->out_iso_pipe, dev->iso_out, 1);
+				dev->out_iso_pipe, dev->iso_out, 4);
 		break;
 
 	case 23:
@@ -2538,7 +2539,7 @@ usbtest_do_ioctl(struct usb_interface *intf, struct usbtest_param_32 *param)
 				param->iterations,
 				param->sglen, param->length);
 		retval = test_queue(dev, param,
-				dev->in_iso_pipe, dev->iso_in, 1);
+				dev->in_iso_pipe, dev->iso_in, 4);
 		break;
 
 	/* unlink URBs from a bulk-OUT queue */
@@ -2769,7 +2770,6 @@ usbtest_probe(struct usb_interface *intf, const struct usb_device_id *id)
 	char			*intrtest, *intwtest;
 
 	udev = interface_to_usbdev(intf);
-
 #ifdef	GENERIC
 	/* specify devices by module parameters? */
 	if (id->match_flags == 0) {

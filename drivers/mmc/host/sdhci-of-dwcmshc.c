@@ -89,6 +89,26 @@ static const struct sdhci_pltfm_data sdhci_dwcmshc_pdata = {
 	.quirks = SDHCI_QUIRK_CAP_CLOCK_BASE_BROKEN,
 };
 
+
+/* This api is for wifi driver rescan the sdio device,
+ * ugly but it is needed */
+static unsigned int slot_index = 0;
+static struct mmc_host *__mmc__host[3] = {NULL};
+
+int plat_sdio_rescan(int slot)
+{
+	struct mmc_host *mmc = __mmc__host[slot];
+
+	if (mmc == NULL) {
+			pr_err("invalid mmc, please check the argument\n");
+			return -EINVAL;
+	}
+
+	mmc_detect_change(mmc, 0);
+	return 0;
+}
+EXPORT_SYMBOL(plat_sdio_rescan);
+
 static int dwcmshc_probe(struct platform_device *pdev)
 {
 	struct sdhci_pltfm_host *pltfm_host;
@@ -126,6 +146,10 @@ static int dwcmshc_probe(struct platform_device *pdev)
 	priv->bus_clk = devm_clk_get(&pdev->dev, "bus");
 	if (!IS_ERR(priv->bus_clk))
 		clk_prepare_enable(priv->bus_clk);
+	
+	
+	/* new fix: storage mmc host to array */
+	__mmc__host[slot_index++] = host->mmc;
 
 	err = mmc_of_parse(host->mmc);
 	if (err)

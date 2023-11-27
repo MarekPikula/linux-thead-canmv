@@ -12,3 +12,17 @@ config K210_SYSCTL
 	  reserved for the AI engine.
 
 endif
+
+if SOC_THEAD
+
+menu "K230 SoC drivers"
+
+config K230_PMU
+	bool "K230 power management unit"
+	default y
+	help
+	  Enables K230 PMU control PMIC.
+
+endmenu
+
+endif

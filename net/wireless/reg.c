@@ -4205,7 +4205,10 @@ static int __init regulatory_init_db(void)
 	return 0;
 }
 #ifndef MODULE
+/* new fix: */
+#ifdef CONFIG_CFG80211_CRDA_SUPPORT
 late_initcall(regulatory_init_db);
+#endif
 #endif
 
 int __init regulatory_init(void)
@@ -4224,7 +4227,12 @@ int __init regulatory_init(void)
 	user_alpha2[1] = '7';
 
 #ifdef MODULE
+/* new fix: */
+#ifdef CONFIG_CFG80211_CRDA_SUPPORT
 	return regulatory_init_db();
+#else
+	return 0;
+#endif
 #else
 	return 0;
 #endif

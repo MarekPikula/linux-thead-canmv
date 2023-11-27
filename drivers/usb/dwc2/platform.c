@@ -328,6 +328,9 @@ static int dwc2_driver_remove(struct platform_device *dev)
 	if (hsotg->params.activate_stm_id_vb_detection)
 		regulator_disable(hsotg->usb33d);
 
+    if(hsotg->kendryte_phy_init)
+        iounmap(hsotg->hs_regs);
+
 	if (hsotg->ll_hw_enabled)
 		dwc2_lowlevel_hw_disable(hsotg);
 
@@ -518,7 +521,10 @@ static int dwc2_driver_probe(struct platform_device *dev)
 	retval = dwc2_init_params(hsotg);
 	if (retval)
 		goto error;
-
+    if(hsotg->kendryte_phy_init)
+    {
+        hsotg->hs_regs = ioremap(0x91585000, 0x1000);
+    }
 	if (hsotg->params.activate_stm_id_vb_detection) {
 		u32 ggpio;
 

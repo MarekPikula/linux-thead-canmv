@@ -43,7 +43,7 @@
 #define SDHCI_DUMP(f, x...) \
 	pr_err("%s: " DRIVER_NAME ": " f, mmc_hostname(host->mmc), ## x)
 
-#define MAX_TUNING_LOOP 40
+#define MAX_TUNING_LOOP 128
 
 static unsigned int debug_quirks = 0;
 static unsigned int debug_quirks2;
@@ -322,10 +322,12 @@ static void sdhci_init(struct sdhci_host *host, int soft)
 	struct mmc_host *mmc = host->mmc;
 	unsigned long flags;
 
+
 	if (soft)
 		sdhci_do_reset(host, SDHCI_RESET_CMD | SDHCI_RESET_DATA);
 	else
 		sdhci_do_reset(host, SDHCI_RESET_ALL);
+
 
 	if (host->v4_mode)
 		sdhci_do_enable_v4_mode(host);
@@ -1939,6 +1941,7 @@ void sdhci_enable_clk(struct sdhci_host *host, u16 clk)
 	ktime_t timeout;
 
 	clk |= SDHCI_CLOCK_INT_EN;
+	clk |= SDHCI_PROG_CLOCK_MODE;
 	sdhci_writew(host, clk, SDHCI_CLOCK_CONTROL);
 
 	/* Wait max 150 ms */
@@ -2010,7 +2013,7 @@ static void sdhci_set_power_reg(struct sdhci_host *host, unsigned char mode,
 	mmc_regulator_set_ocr(mmc, mmc->supply.vmmc, vdd);
 
 	if (mode != MMC_POWER_OFF)
-		sdhci_writeb(host, SDHCI_POWER_ON, SDHCI_POWER_CONTROL);
+        sdhci_writeb(host, SDHCI_POWER_ON, SDHCI_POWER_CONTROL);
 	else
 		sdhci_writeb(host, 0, SDHCI_POWER_CONTROL);
 }
@@ -2517,7 +2520,6 @@ int sdhci_start_signal_voltage_switch(struct mmc_host *mmc,
 	struct sdhci_host *host = mmc_priv(mmc);
 	u16 ctrl;
 	int ret;
-
 	/*
 	 * Signal Voltage Switching is only applicable for Host Controllers
 	 * v3.00 and above.
