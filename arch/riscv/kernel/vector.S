@@ -20,13 +20,8 @@
 #include <asm/csr.h>
 #include <asm/asm-offsets.h>
 
-#if (defined(CONFIG_VECTOR_1_0) && defined(__THEAD_VERSION__))
 #define V_ST	vse8.v
 #define V_LD	vle8.v
-#else
-#define V_ST	vsb.v
-#define V_LD	vlb.v
-#endif
 
 ENTRY(__vstate_save)
 	li	a2,  TASK_THREAD_V0
