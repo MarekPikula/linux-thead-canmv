@@ -1225,7 +1225,7 @@ config XILINX_XADC
 
 config K230_ADC
 	tristate "ADC driver for k230"
-	def_bool y
+	default y
 	help
 		Say Y or M here to build support for the k230 ADC driver.
 

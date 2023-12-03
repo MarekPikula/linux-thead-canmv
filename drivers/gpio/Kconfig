@@ -234,7 +234,7 @@ config GPIO_DWAPB
 
 config GPIO_K230
 	tristate "GPIO driver for k230"
-	def_bool y
+	default y
 	select GPIO_GENERIC
 	select GPIOLIB_IRQCHIP
 	help
